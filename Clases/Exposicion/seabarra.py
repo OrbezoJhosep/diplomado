@@ -18,12 +18,6 @@ data_barras = data_latam[['location','total_cases']]
 plt.figure(figsize=(20,10))
 barplot = sns.barplot(data = data_barras, x = 'location', y = 'total_cases')
 
-# Añadir las etiquetas de los valores encima de cada barra
-for bar in barplot.patches:
-    height = bar.get_height()
-    barplot.text(bar.get_x() + bar.get_width() / 2, height, round(height, 2), 
-            color='black', ha="center", va="bottom")
-
 
 plt.xticks(rotation = 45)
 plt.title ('Casos en latinoamerica')
