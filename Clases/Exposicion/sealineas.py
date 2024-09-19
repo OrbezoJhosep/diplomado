@@ -1,25 +1,45 @@
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Leer el dataset
 dataset = pd.read_csv('C:/Users/Jhosep/Desktop/Diplomado/Clases/exposicion/owid-covid-data.csv')
 
-# Filtrar los datos solo para Brazil
-data_brazil = dataset[dataset['location'] == 'Brazil']
+# Filtrar las columnas necesarias
+data_filtrada = dataset[['continent', 'location', 'date', 'total_deaths']]
 
-# Convertir la columna de fecha a formato datetime
-data_brazil['date'] = pd.to_datetime(data_brazil['date'])
+# Convertir la columna 'date' a formato de fecha
+data_filtrada['date'] = pd.to_datetime(data_filtrada['date'])
 
-# Filtrar columnas relevantes
-data_lineas = data_brazil[['date', 'new_cases']].dropna()
+# Filtrar los datos para los países de América Latina
+lista_paises = ['Argentina', 'Peru', 'Paraguay', 'Brazil', 'Chile', 'Uruguay', 
+                'Colombia', 'Ecuador', 'Bolivia', 'Venezuela']
 
-# Crear gráfico de líneas para Brazil
-plt.figure(figsize=(10,6))
-sns.lineplot(data=data_lineas, x='date', y='new_cases', label='Brazil')
-plt.title('Evolución de Nuevos Casos en Brazil')
-plt.ylabel('Nuevos Casos')
-plt.xlabel('Fecha')
+data_latam = data_filtrada[data_filtrada['location'].isin(lista_paises)]
+
+# Filtrar los datos desde el año 2020 en adelante
+data_latam = data_latam[data_latam['date'].dt.year >= 2020]
+
+# Crear una nueva columna 'year' para agrupar por año
+data_latam['year'] = data_latam['date'].dt.year
+
+# Eliminar filas con valores nulos en 'total_deaths'
+data_latam_limpio = data_latam.dropna(subset=['total_deaths'])
+
+# Agrupar los datos por año y país, sumando las muertes totales por año
+data_agrupada = data_latam_limpio.groupby(['location', 'year'], as_index=False)['total_deaths'].sum()
+
+# Crear el gráfico de líneas con Seaborn
+plt.figure(figsize=(12, 8))
+sns.lineplot(data=data_agrupada, x='year', y='total_deaths', hue='location', marker='o')
+
+# Configurar etiquetas y título
+plt.title('Aumento de Muertes por COVID-19 en Latinoamérica (2020 en adelante)', fontsize=16)
+plt.xlabel('Año', fontsize=12)
+plt.ylabel('Total de Muertes', fontsize=12)
 plt.xticks(rotation=45)
-plt.legend()
+plt.legend(title='Países', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Mostrar el gráfico
+plt.tight_layout()
 plt.show()
